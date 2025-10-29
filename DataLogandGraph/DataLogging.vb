@@ -9,11 +9,14 @@
     Sub GraphData()
         Dim g As Graphics = GraphPictureBox.CreateGraphics
         Dim pen As New Pen(Color.Lime)
+        Dim scaleX As Single = GraphPictureBox.Width \ 100
+        Dim scaleY As Single = (GraphPictureBox.Height \ 100) * -1
 
         g.TranslateTransform(0, GraphPictureBox.Height)
-        g.ScaleTransform(100, -1)
+        g.ScaleTransform(scaleX, scaleY)
 
-        g.DrawLine(pen, 0, 5, 1, 5)
+        pen.Width = 0.25
+        g.DrawLine(pen, 5, 50, 85, 50)
 
         g.Dispose()
         pen.Dispose()
