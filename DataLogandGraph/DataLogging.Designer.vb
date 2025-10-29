@@ -24,9 +24,9 @@ Partial Class DataLoggingGraph
     Private Sub InitializeComponent()
         Me.GraphPictureBox = New System.Windows.Forms.PictureBox()
         Me.ButtonGroupBox = New System.Windows.Forms.GroupBox()
-        Me.Button1 = New System.Windows.Forms.Button()
-        Me.Button2 = New System.Windows.Forms.Button()
         Me.ExitButton = New System.Windows.Forms.Button()
+        Me.GraphButton = New System.Windows.Forms.Button()
+        Me.Button1 = New System.Windows.Forms.Button()
         Me.MenuStrip1 = New System.Windows.Forms.MenuStrip()
         Me.FileToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.StatusStrip = New System.Windows.Forms.StatusStrip()
@@ -39,6 +39,9 @@ Partial Class DataLoggingGraph
         '
         'GraphPictureBox
         '
+        Me.GraphPictureBox.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.GraphPictureBox.BackColor = System.Drawing.SystemColors.ActiveCaptionText
         Me.GraphPictureBox.Location = New System.Drawing.Point(29, 67)
         Me.GraphPictureBox.Name = "GraphPictureBox"
@@ -48,32 +51,15 @@ Partial Class DataLoggingGraph
         '
         'ButtonGroupBox
         '
+        Me.ButtonGroupBox.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.ButtonGroupBox.Controls.Add(Me.ExitButton)
-        Me.ButtonGroupBox.Controls.Add(Me.Button2)
+        Me.ButtonGroupBox.Controls.Add(Me.GraphButton)
         Me.ButtonGroupBox.Controls.Add(Me.Button1)
-        Me.ButtonGroupBox.Location = New System.Drawing.Point(1354, 732)
+        Me.ButtonGroupBox.Location = New System.Drawing.Point(1040, 721)
         Me.ButtonGroupBox.Name = "ButtonGroupBox"
         Me.ButtonGroupBox.Size = New System.Drawing.Size(731, 154)
         Me.ButtonGroupBox.TabIndex = 1
         Me.ButtonGroupBox.TabStop = False
-        '
-        'Button1
-        '
-        Me.Button1.Location = New System.Drawing.Point(6, 36)
-        Me.Button1.Name = "Button1"
-        Me.Button1.Size = New System.Drawing.Size(168, 81)
-        Me.Button1.TabIndex = 0
-        Me.Button1.Text = "Button1"
-        Me.Button1.UseVisualStyleBackColor = True
-        '
-        'Button2
-        '
-        Me.Button2.Location = New System.Drawing.Point(263, 36)
-        Me.Button2.Name = "Button2"
-        Me.Button2.Size = New System.Drawing.Size(166, 81)
-        Me.Button2.TabIndex = 1
-        Me.Button2.Text = "Button2"
-        Me.Button2.UseVisualStyleBackColor = True
         '
         'ExitButton
         '
@@ -83,6 +69,24 @@ Partial Class DataLoggingGraph
         Me.ExitButton.TabIndex = 2
         Me.ExitButton.Text = "&Exit"
         Me.ExitButton.UseVisualStyleBackColor = True
+        '
+        'GraphButton
+        '
+        Me.GraphButton.Location = New System.Drawing.Point(263, 36)
+        Me.GraphButton.Name = "GraphButton"
+        Me.GraphButton.Size = New System.Drawing.Size(166, 81)
+        Me.GraphButton.TabIndex = 1
+        Me.GraphButton.Text = "&Graph"
+        Me.GraphButton.UseVisualStyleBackColor = True
+        '
+        'Button1
+        '
+        Me.Button1.Location = New System.Drawing.Point(6, 36)
+        Me.Button1.Name = "Button1"
+        Me.Button1.Size = New System.Drawing.Size(168, 81)
+        Me.Button1.TabIndex = 0
+        Me.Button1.Text = "Button1"
+        Me.Button1.UseVisualStyleBackColor = True
         '
         'MenuStrip1
         '
@@ -143,7 +147,7 @@ Partial Class DataLoggingGraph
     Friend WithEvents GraphPictureBox As PictureBox
     Friend WithEvents ButtonGroupBox As GroupBox
     Friend WithEvents ExitButton As Button
-    Friend WithEvents Button2 As Button
+    Friend WithEvents GraphButton As Button
     Friend WithEvents Button1 As Button
     Friend WithEvents MenuStrip1 As MenuStrip
     Friend WithEvents FileToolStripMenuItem As ToolStripMenuItem
