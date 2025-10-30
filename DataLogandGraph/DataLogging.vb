@@ -28,7 +28,7 @@ Public Class DataLoggingGraph
         Dim pen As New Pen(Color.Lime)
         Dim scaleX! = CSng(GraphPictureBox.Width \ 100)
         Dim scaleY! = CSng((GraphPictureBox.Height \ 100) * -1)
-        Dim oldY% = 50
+        Dim oldY% = GetRandomNumberAround(50, 50)
         Dim newY% = 50
 
 
