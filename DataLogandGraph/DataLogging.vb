@@ -39,28 +39,20 @@ Public Class DataLoggingGraph
     Sub GraphData()
         Dim g As Graphics = GraphPictureBox.CreateGraphics
         Dim pen As New Pen(Color.Lime)
+        Dim eraser As New Pen(Color.Black)
         Dim scaleX! = CSng(GraphPictureBox.Width \ 100)
         Dim scaleY! = CSng((GraphPictureBox.Height \ 100) * -1)
 
         g.Clear(Color.Black)
         g.TranslateTransform(0, GraphPictureBox.Height) 'Moves origin to bottom left
         g.ScaleTransform(scaleX, scaleY) 'scale to 100 x 100 units
+        pen.Width = 0.5
 
         Dim oldY% = 0 'eGetRandomNumberAround(50, 50)
-        'Dim newY% = 50
-        'pen.Width = 0.25 'Fixes pen so it isn't this
-
-        'For x = 0 To 100
-        '    newY = GetRandomNumberAround(oldY, 5)
-        '    g.DrawLine(pen, x - 1, oldY, x, newY)
-        '    oldY = newY
-        'Next
-        'For y = 1 To 100
-        '    Me.DataBuffer.Enqueue(y)
-        'Next
         Dim x = -1
         For Each y In Me.DataBuffer.Reverse
             x += 1
+            g.DrawLine(eraser, x, 0, x, 100)
             g.DrawLine(pen, x - 1, oldY, x, y)
             oldY = y
         Next
