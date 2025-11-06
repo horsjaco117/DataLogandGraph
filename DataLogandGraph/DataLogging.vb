@@ -79,6 +79,18 @@ Public Class DataLoggingGraph
     End Sub
 
     Private Sub GraphButton_Click(sender As Object, e As EventArgs) Handles GraphButton.Click
+        If SampleTimer.Enabled Then
+            SampleTimer.Stop()
+            SampleTimer.Enabled = False
+
+        Else
+            SampleTimer.Enabled = True
+            SampleTimer.Start()
+        End If
+
+    End Sub
+
+    Private Sub SampleTimer_Tick(sender As Object, e As EventArgs) Handles SampleTimer.Tick
         GraphData()
         GetData()
 

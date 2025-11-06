@@ -22,6 +22,7 @@ Partial Class DataLoggingGraph
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
+        Me.components = New System.ComponentModel.Container()
         Me.GraphPictureBox = New System.Windows.Forms.PictureBox()
         Me.ButtonGroupBox = New System.Windows.Forms.GroupBox()
         Me.ExitButton = New System.Windows.Forms.Button()
@@ -31,6 +32,7 @@ Partial Class DataLoggingGraph
         Me.FileToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.StatusStrip = New System.Windows.Forms.StatusStrip()
         Me.FilePathStatusLabel = New System.Windows.Forms.ToolStripStatusLabel()
+        Me.SampleTimer = New System.Windows.Forms.Timer(Me.components)
         CType(Me.GraphPictureBox, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.ButtonGroupBox.SuspendLayout()
         Me.MenuStrip1.SuspendLayout()
@@ -121,6 +123,9 @@ Partial Class DataLoggingGraph
         Me.FilePathStatusLabel.Size = New System.Drawing.Size(180, 25)
         Me.FilePathStatusLabel.Text = "ToolStripStatusLabel1"
         '
+        'SampleTimer
+        '
+        '
         'DataLoggingGraph
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(9.0!, 20.0!)
@@ -153,4 +158,5 @@ Partial Class DataLoggingGraph
     Friend WithEvents FileToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents StatusStrip As StatusStrip
     Friend WithEvents FilePathStatusLabel As ToolStripStatusLabel
+    Friend WithEvents SampleTimer As Timer
 End Class
