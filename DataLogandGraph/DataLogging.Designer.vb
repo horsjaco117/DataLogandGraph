@@ -29,10 +29,23 @@ Partial Class DataLoggingGraph
         Me.GraphButton = New System.Windows.Forms.Button()
         Me.Button1 = New System.Windows.Forms.Button()
         Me.MenuStrip1 = New System.Windows.Forms.MenuStrip()
-        Me.FileToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.OpenTopMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.OpenToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.StatusStrip = New System.Windows.Forms.StatusStrip()
         Me.FilePathStatusLabel = New System.Windows.Forms.ToolStripStatusLabel()
         Me.SampleTimer = New System.Windows.Forms.Timer(Me.components)
+        Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
+        Me.SerialPort1 = New System.IO.Ports.SerialPort(Me.components)
+        Me.PortsComboBox = New System.Windows.Forms.ComboBox()
+        Me.PortsLabel = New System.Windows.Forms.Label()
+        Me.COMButton = New System.Windows.Forms.Button()
+        Me.AnalogTimer = New System.Windows.Forms.Timer(Me.components)
+        Me.SerialTextBox = New System.Windows.Forms.TextBox()
+        Me.YAxisTextBox = New System.Windows.Forms.TextBox()
+        Me.SerialLabel = New System.Windows.Forms.Label()
+        Me.YAxisLabel = New System.Windows.Forms.Label()
+        Me.XAxisTextBox = New System.Windows.Forms.TextBox()
+        Me.XAxisLabel = New System.Windows.Forms.Label()
         CType(Me.GraphPictureBox, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.ButtonGroupBox.SuspendLayout()
         Me.MenuStrip1.SuspendLayout()
@@ -94,18 +107,25 @@ Partial Class DataLoggingGraph
         '
         Me.MenuStrip1.GripMargin = New System.Windows.Forms.Padding(2, 2, 0, 2)
         Me.MenuStrip1.ImageScalingSize = New System.Drawing.Size(24, 24)
-        Me.MenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.FileToolStripMenuItem})
+        Me.MenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.OpenTopMenuItem})
         Me.MenuStrip1.Location = New System.Drawing.Point(0, 0)
         Me.MenuStrip1.Name = "MenuStrip1"
-        Me.MenuStrip1.Size = New System.Drawing.Size(2135, 33)
+        Me.MenuStrip1.Size = New System.Drawing.Size(2135, 36)
         Me.MenuStrip1.TabIndex = 2
         Me.MenuStrip1.Text = "MenuStrip1"
         '
-        'FileToolStripMenuItem
+        'OpenTopMenuItem
         '
-        Me.FileToolStripMenuItem.Name = "FileToolStripMenuItem"
-        Me.FileToolStripMenuItem.Size = New System.Drawing.Size(54, 29)
-        Me.FileToolStripMenuItem.Text = "&File"
+        Me.OpenTopMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.OpenToolStripMenuItem})
+        Me.OpenTopMenuItem.Name = "OpenTopMenuItem"
+        Me.OpenTopMenuItem.Size = New System.Drawing.Size(54, 29)
+        Me.OpenTopMenuItem.Text = "&File"
+        '
+        'OpenToolStripMenuItem
+        '
+        Me.OpenToolStripMenuItem.Name = "OpenToolStripMenuItem"
+        Me.OpenToolStripMenuItem.Size = New System.Drawing.Size(158, 34)
+        Me.OpenToolStripMenuItem.Text = "&Open"
         '
         'StatusStrip
         '
@@ -126,11 +146,104 @@ Partial Class DataLoggingGraph
         'SampleTimer
         '
         '
+        'OpenFileDialog1
+        '
+        Me.OpenFileDialog1.FileName = "OpenFileDialog1"
+        '
+        'SerialPort1
+        '
+        '
+        'PortsComboBox
+        '
+        Me.PortsComboBox.FormattingEnabled = True
+        Me.PortsComboBox.Location = New System.Drawing.Point(46, 801)
+        Me.PortsComboBox.Name = "PortsComboBox"
+        Me.PortsComboBox.Size = New System.Drawing.Size(121, 28)
+        Me.PortsComboBox.TabIndex = 4
+        '
+        'PortsLabel
+        '
+        Me.PortsLabel.AutoSize = True
+        Me.PortsLabel.Location = New System.Drawing.Point(42, 778)
+        Me.PortsLabel.Name = "PortsLabel"
+        Me.PortsLabel.Size = New System.Drawing.Size(86, 20)
+        Me.PortsLabel.TabIndex = 5
+        Me.PortsLabel.Text = "COM Ports"
+        '
+        'COMButton
+        '
+        Me.COMButton.Location = New System.Drawing.Point(219, 778)
+        Me.COMButton.Name = "COMButton"
+        Me.COMButton.Size = New System.Drawing.Size(119, 51)
+        Me.COMButton.TabIndex = 6
+        Me.COMButton.Text = "Button2"
+        Me.COMButton.UseVisualStyleBackColor = True
+        '
+        'AnalogTimer
+        '
+        '
+        'SerialTextBox
+        '
+        Me.SerialTextBox.Location = New System.Drawing.Point(356, 801)
+        Me.SerialTextBox.Name = "SerialTextBox"
+        Me.SerialTextBox.Size = New System.Drawing.Size(266, 26)
+        Me.SerialTextBox.TabIndex = 7
+        '
+        'YAxisTextBox
+        '
+        Me.YAxisTextBox.Location = New System.Drawing.Point(356, 879)
+        Me.YAxisTextBox.Name = "YAxisTextBox"
+        Me.YAxisTextBox.Size = New System.Drawing.Size(266, 26)
+        Me.YAxisTextBox.TabIndex = 8
+        '
+        'SerialLabel
+        '
+        Me.SerialLabel.AutoSize = True
+        Me.SerialLabel.Location = New System.Drawing.Point(352, 766)
+        Me.SerialLabel.Name = "SerialLabel"
+        Me.SerialLabel.Size = New System.Drawing.Size(88, 20)
+        Me.SerialLabel.TabIndex = 9
+        Me.SerialLabel.Text = "Serial Data"
+        '
+        'YAxisLabel
+        '
+        Me.YAxisLabel.AutoSize = True
+        Me.YAxisLabel.Location = New System.Drawing.Point(352, 845)
+        Me.YAxisLabel.Name = "YAxisLabel"
+        Me.YAxisLabel.Size = New System.Drawing.Size(90, 20)
+        Me.YAxisLabel.TabIndex = 10
+        Me.YAxisLabel.Text = "Y Axis label"
+        '
+        'XAxisTextBox
+        '
+        Me.XAxisTextBox.Location = New System.Drawing.Point(356, 937)
+        Me.XAxisTextBox.Name = "XAxisTextBox"
+        Me.XAxisTextBox.Size = New System.Drawing.Size(266, 26)
+        Me.XAxisTextBox.TabIndex = 11
+        '
+        'XAxisLabel
+        '
+        Me.XAxisLabel.AutoSize = True
+        Me.XAxisLabel.Location = New System.Drawing.Point(352, 914)
+        Me.XAxisLabel.Name = "XAxisLabel"
+        Me.XAxisLabel.Size = New System.Drawing.Size(53, 20)
+        Me.XAxisLabel.TabIndex = 12
+        Me.XAxisLabel.Text = "X Axis"
+        '
         'DataLoggingGraph
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(9.0!, 20.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(2135, 1024)
+        Me.Controls.Add(Me.XAxisLabel)
+        Me.Controls.Add(Me.XAxisTextBox)
+        Me.Controls.Add(Me.YAxisLabel)
+        Me.Controls.Add(Me.SerialLabel)
+        Me.Controls.Add(Me.YAxisTextBox)
+        Me.Controls.Add(Me.SerialTextBox)
+        Me.Controls.Add(Me.COMButton)
+        Me.Controls.Add(Me.PortsLabel)
+        Me.Controls.Add(Me.PortsComboBox)
         Me.Controls.Add(Me.StatusStrip)
         Me.Controls.Add(Me.ButtonGroupBox)
         Me.Controls.Add(Me.GraphPictureBox)
@@ -155,8 +268,21 @@ Partial Class DataLoggingGraph
     Friend WithEvents GraphButton As Button
     Friend WithEvents Button1 As Button
     Friend WithEvents MenuStrip1 As MenuStrip
-    Friend WithEvents FileToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents OpenTopMenuItem As ToolStripMenuItem
     Friend WithEvents StatusStrip As StatusStrip
     Friend WithEvents FilePathStatusLabel As ToolStripStatusLabel
     Friend WithEvents SampleTimer As Timer
+    Friend WithEvents OpenFileDialog1 As OpenFileDialog
+    Friend WithEvents OpenToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents SerialPort1 As IO.Ports.SerialPort
+    Friend WithEvents PortsComboBox As ComboBox
+    Friend WithEvents PortsLabel As Label
+    Friend WithEvents COMButton As Button
+    Friend WithEvents AnalogTimer As Timer
+    Friend WithEvents SerialTextBox As TextBox
+    Friend WithEvents YAxisTextBox As TextBox
+    Friend WithEvents SerialLabel As Label
+    Friend WithEvents YAxisLabel As Label
+    Friend WithEvents XAxisTextBox As TextBox
+    Friend WithEvents XAxisLabel As Label
 End Class
