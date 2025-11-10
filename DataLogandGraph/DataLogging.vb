@@ -7,6 +7,8 @@ Imports System.Runtime.CompilerServices
 'Serial communications imports
 Imports System.IO.Ports
 Imports System.Net.Configuration
+Imports System.IO
+Imports System.Threading.Tasks
 
 Public Class DataLoggingGraph
     Private LastCommand As Byte
@@ -42,7 +44,7 @@ Public Class DataLoggingGraph
     Sub connect()
 
         SerialPort1.Close() 'Closes the ports 
-        Try  'All these are serial port settings. 
+        Try 'All these are serial port settings. 
             SerialPort1.BaudRate = 115200
             SerialPort1.Parity = Parity.None
             SerialPort1.StopBits = StopBits.One
@@ -52,7 +54,7 @@ Public Class DataLoggingGraph
 
 
             If IsQuietBoard() Then 'Confirms that communication is with the Quiet Board
-                '     ConnectionStatusLabel.Text = $"Qy@ Connected on {SerialPort1.PortName}"
+                ' ConnectionStatusLabel.Text = $"Qy@ Connected on {SerialPort1.PortName}"
             Else
                 SetDefaults() 'Resets to defaults if not quiet board
             End If
@@ -117,7 +119,7 @@ Public Class DataLoggingGraph
     Private Sub SerialPort1_DataReceived(sender As Object, e As SerialDataReceivedEventArgs) Handles SerialPort1.DataReceived
         Try
             Dim bytesToRead As Integer = SerialPort1.BytesToRead
-            If bytesToRead < 4 Then Exit Sub                 ' not enough data yet
+            If bytesToRead < 4 Then Exit Sub ' not enough data yet
 
             Dim buffer(bytesToRead - 1) As Byte
             SerialPort1.Read(buffer, 0, bytesToRead)
@@ -127,8 +129,8 @@ Public Class DataLoggingGraph
                 hexString.Append(b.ToString("X2") & " ")
             Next
 
-            Dim leftValue As Integer = buffer(1)   ' left analog (X-axis) takes the bytes we want
-            Dim rightValue As Integer = buffer(3)  ' right analog (Y-axis)
+            Dim leftValue As Integer = buffer(1) ' left analog (X-axis) takes the bytes we want
+            Dim rightValue As Integer = buffer(3) ' right analog (Y-axis)
 
             ' Update the text boxes with the hex bytes (thread-safe)
             WriteToTextBox(Me.XAxisTextBox, buffer(0).ToString("X2"))
@@ -163,15 +165,15 @@ Public Class DataLoggingGraph
         If String.IsNullOrEmpty(hx) Or String.IsNullOrEmpty(hy) Then Return
 
         Try
-            Dim valX As Integer = Convert.ToInt32(hx, 16) ' 0..255 expected
+            Dim valX As Integer = Convert.ToInt32(hx, 16) '0..255 expected
             Dim valY As Integer = Convert.ToInt32(hy, 16)
 
             ' --- DRAWING LIMITS CONFIG ---
             ' Change these four values to move the drawing area.
-            Dim leftRatio As Single = 0.1F   ' 10% from left
-            Dim rightRatio As Single = 0.9F  ' 10% from right
-            Dim topRatio As Single = 0.1F    ' 10% from top
-            Dim bottomRatio As Single = 0.9F ' 10% from bottom
+            Dim leftRatio As Single = 0.1F '10% from left
+            Dim rightRatio As Single = 0.9F '10% from right
+            Dim topRatio As Single = 0.1F '10% from top
+            Dim bottomRatio As Single = 0.9F '10% from bottom
 
             Dim w As Integer = Math.Max(1, GraphPictureBox.Width - 1)
             Dim h As Integer = Math.Max(1, GraphPictureBox.Height - 1)
@@ -185,7 +187,7 @@ Public Class DataLoggingGraph
             If maxX < minX Then Swap(minX, maxX)
             If maxY < minY Then Swap(minY, maxY)
 
-            ' Map raw 0..255 into the constrained rectangle
+            ' Map raw0..255 into the constrained rectangle
             Dim mappedX As Integer = minX + CInt(Math.Round((valX / 255.0F) * (maxX - minX)))
             Dim mappedY As Integer = minY + CInt(Math.Round((valY / 255.0F) * (maxY - minY)))
 
@@ -197,9 +199,9 @@ Public Class DataLoggingGraph
             currentY = Math.Max(0, Math.Min(h, mappedY))
 
             ' Draw on UI thread
-            '   If Me.InvokeRequired Then
-            '        Me.Invoke(Sub() DrawWithMouse(oldX, oldY, CInt(currentX), CInt(currentY)))
-            '  Else
+            ' If Me.InvokeRequired Then
+            ' Me.Invoke(Sub() DrawWithMouse(oldX, oldY, CInt(currentX), CInt(currentY)))
+            ' Else
             ' DrawWithMouse(oldX, oldY, CInt(currentX), CInt(currentY))
             'End If
         Catch ex As Exception
@@ -225,10 +227,10 @@ Public Class DataLoggingGraph
         End If
     End Sub
     'Private Sub ReadAnalogButton_Click(sender As Object, e As EventArgs) Handles AnalogButton1.Click
-    '    Dim data(0) As Byte
-    '    data(0) = &H5F 'Hex value for reading analog quiet board values
-    '    connect()
-    '    SerialPort1.Write(data, 0, 1)
+    ' Dim data(0) As Byte
+    ' data(0) = &H5F 'Hex value for reading analog quiet board values
+    ' connect()
+    ' SerialPort1.Write(data,0,1)
     'End Sub
 
     'Program logic---------------------------------------------------------------------------
@@ -248,14 +250,21 @@ Public Class DataLoggingGraph
     End Function
 
     Sub LogData(currentSample%)
-        Dim filePath$ = $"..\..\SensorData_{DateTime.Now.ToString("yyMMddhh")}.log"
-        FileOpen(1, filePath, OpenMode.Append)
-        write(1, "$$")
-        write(1, DateTime.Now)
-        write(1, DateTime.Now.Millisecond)
-        WriteLine(1, currentSample)
-
-        FileClose(1)
+        ' Offload file IO to a background task to avoid blocking the UI timer
+        Try
+            Dim fileName = $"SensorData_{DateTime.Now.ToString("yyMMddhh")}.log"
+            Dim filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fileName)
+            Dim line = String.Format("$${0},{1}{2}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), currentSample, Environment.NewLine)
+            Task.Run(Sub()
+                         Try
+                             File.AppendAllText(filePath, line)
+                         Catch ioEx As Exception
+                             Debug.WriteLine("LogData IO error: " & ioEx.Message)
+                         End Try
+                     End Sub)
+        Catch ex As Exception
+            Debug.WriteLine("LogData error: " & ex.Message)
+        End Try
 
     End Sub
 
@@ -289,49 +298,112 @@ Public Class DataLoggingGraph
         GraphData()
     End Sub
 
+    Private Function GetHexValueFromTextBox(tb As System.Windows.Forms.TextBox, Optional defaultValue As Integer = 0) As Integer
+        If tb Is Nothing Then Return defaultValue
+        Dim s As String = tb.Text.Trim()
+        If String.IsNullOrEmpty(s) Then Return defaultValue
+
+        ' Normalize and strip common prefixes
+        s = s.ToUpperInvariant().Replace("0X", "").Replace("&H", "")
+        ' keep only the first token in case UI shows "AA BB"
+        s = s.Split({" "c, vbTab, vbCrLf}, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()
+        If String.IsNullOrEmpty(s) Then Return defaultValue
+
+        Try
+            Dim v As Integer = Convert.ToInt32(s, 16)
+            ' clamp to expected0..255
+            If v < 0 Then v = 0
+            If v > 255 Then v = 255
+            Return v
+        Catch ex As Exception
+            ' parsing failed -> return default
+            Return defaultValue
+        End Try
+    End Function
+
     Sub GetData()
-        Dim _last%
-        Dim sample%
+        ' Read the Y-axis hex value and use it as the sample (replaces GetRandomNumberAround)
+        Dim sample As Integer = GetHexValueFromTextBox(Me.YAxisTextBox, 0)
 
-        If Me.DataBuffer.Count > 0 Then
-            _last = Me.DataBuffer.Last
-        Else
-            _last = GetRandomNumberAround(50, 50)
-        End If
-
-        If DataBuffer.Count >= 100 Then 'Keep the queue trimmed to graph x length
+        ' Maintain buffer length
+        If DataBuffer.Count >= 100 Then
             DataBuffer.Dequeue()
         End If
-        sample = GetRandomNumberAround(_last, 5)
+
         Me.DataBuffer.Enqueue(sample)
         LogData(sample)
     End Sub
 
+    'Sub GetData()
+    ' Dim _last%
+    ' Dim sample%
+
+    ' If Me.DataBuffer.Count >0 Then
+    ' _last = Me.DataBuffer.Last
+    ' Else
+
+    ' _last = GetRandomNumberAround(50,50)
+    ' End If
+
+    ' If DataBuffer.Count >=100 Then 'Keep the queue trimmed to graph x length
+    ' DataBuffer.Dequeue()
+    ' End If
+    ' sample = GetRandomNumberAround(_last,5)
+    ' Me.DataBuffer.Enqueue(sample)
+    ' LogData(sample)
+    'End Sub
+
     Sub GraphData()
-        Dim g As Graphics = GraphPictureBox.CreateGraphics
-        Dim pen As New Pen(Color.Lime)
-        Dim eraser As New Pen(Color.Black)
-        'Dim scaleX! = CSng(GraphPictureBox.Width / 100)
-        Dim scaleX! = CSng(GraphPictureBox.Width / Me.DataBuffer.Count)
-        Dim scaleY! = CSng((GraphPictureBox.Height / 100) * -1)
+        ' Draw into an off-screen bitmap and assign to PictureBox.Image to avoid CreateGraphics resource issues
+        Dim w As Integer = Math.Max(1, GraphPictureBox.Width)
+        Dim h As Integer = Math.Max(1, GraphPictureBox.Height)
 
-        'g.Clear(Color.Black)
-        g.TranslateTransform(0, GraphPictureBox.Height) 'move origin to bottom left
-        g.ScaleTransform(scaleX, scaleY) 'scale to 100 x 100 units
-        pen.Width = 0.25 'fix pen so it is not too thick
+        Dim bmp As New Bitmap(w, h)
+        Try
+            Using g As Graphics = Graphics.FromImage(bmp)
+                g.Clear(Color.Black)
+                ' Translate and scale to match old behaviour
+                g.TranslateTransform(0, h)
+                Dim scaleX! = If(Me.DataBuffer.Count > 0, CSng(w) / Me.DataBuffer.Count, 1.0F)
+                Dim scaleY! = CSng((h / 100) * -1)
+                g.ScaleTransform(scaleX, scaleY)
 
-        Dim oldY% = 0 ' GetRandomNumberAround(50, 50)
-        Dim x = -1
-        For Each y In Me.DataBuffer.Reverse
-            x += 1
-            g.DrawLine(eraser, x, 0, x, 100)
-            g.DrawLine(pen, x - 1, oldY, x, y)
-            oldY = y
-        Next
+                Using pen As New Pen(Color.Lime), eraser As New Pen(Color.Black)
+                    pen.Width = 0.25F 'fix pen so it is not too thick
 
-        g.Dispose()
-        pen.Dispose()
-        eraser.Dispose()
+                    Dim oldY% = 0
+                    Dim x = -1
+                    For Each y In Me.DataBuffer.Reverse
+                        x += 1
+                        g.DrawLine(eraser, x, 0, x, 100)
+                        g.DrawLine(pen, x - 1, oldY, x, y)
+                        oldY = y
+                    Next
+                End Using
+            End Using
+
+            ' Swap image on UI thread and dispose previous image
+            Dim prevImage As Image = Nothing
+            If GraphPictureBox.InvokeRequired Then
+                GraphPictureBox.Invoke(Sub()
+                                           prevImage = GraphPictureBox.Image
+                                           GraphPictureBox.Image = bmp
+                                       End Sub)
+            Else
+                prevImage = GraphPictureBox.Image
+                GraphPictureBox.Image = bmp
+            End If
+
+            If prevImage IsNot Nothing Then
+                Try
+                    prevImage.Dispose()
+                Catch ex As Exception
+                End Try
+            End If
+        Catch ex As Exception
+            bmp.Dispose()
+            Debug.WriteLine("GraphData error: " & ex.Message)
+        End Try
 
     End Sub
 
@@ -370,9 +442,50 @@ Public Class DataLoggingGraph
 
     Private Sub DataLoggingGraph_Load(sender As Object, e As EventArgs) Handles Me.Load
         SetDefaults() 'Serial communication defaults
-        AnalogTimer.Enabled = True  ' Disable hardware polling initially
+        AnalogTimer.Enabled = True ' Disable hardware polling initially
 
         currentX = CSng(GraphPictureBox.Width / 2)
         currentY = CSng(GraphPictureBox.Height / 2)
+    End Sub
+
+    Private Sub YAxisTextBox_TextChanged(sender As Object, e As EventArgs) Handles YAxisTextBox.TextChanged
+        Dim tb = DirectCast(sender, TextBox)
+
+        ' Normalize and strip common prefixes
+        Dim s As String = If(tb.Text, String.Empty).ToUpperInvariant()
+        s = s.Replace("0X", "").Replace("&H", "")
+
+        ' Keep only hex digits
+        Dim sb As New System.Text.StringBuilder()
+        For Each ch As Char In s
+            If "0123456789ABCDEF".IndexOf(ch) >= 0 Then sb.Append(ch)
+        Next
+
+        Dim hex = sb.ToString()
+        If String.IsNullOrEmpty(hex) Then
+            ' empty input -> keep empty
+            If tb.Text <> String.Empty Then tb.Text = String.Empty
+            Return
+        End If
+
+        ' Limit to two hex digits (0..FF)
+        If hex.Length > 2 Then hex = hex.Substring(0, 2)
+
+        ' Parse and clamp to0..255, then format as two uppercase hex digits
+        Dim val As Integer
+        If Integer.TryParse(hex, Globalization.NumberStyles.HexNumber, Globalization.CultureInfo.InvariantCulture, val) Then
+            If val < 0 Then val = 0
+            If val > 255 Then val = 255
+            hex = val.ToString("X2")
+        Else
+            hex = "00"
+        End If
+
+        ' Only update textbox if different to avoid re-entrancy; preserve caret as best-effort
+        If tb.Text <> hex Then
+            Dim sel = tb.SelectionStart
+            tb.Text = hex
+            tb.SelectionStart = Math.Min(sel, tb.Text.Length)
+        End If
     End Sub
 End Class
