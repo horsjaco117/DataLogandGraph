@@ -9,6 +9,7 @@ Imports System.IO.Ports
 Imports System.Net.Configuration
 Imports System.IO
 Imports System.Threading.Tasks
+Imports System.Linq
 
 Public Class DataLoggingGraph
     Private LastCommand As Byte
@@ -44,7 +45,7 @@ Public Class DataLoggingGraph
     Sub connect()
 
         SerialPort1.Close() 'Closes the ports 
-        Try 'All these are serial port settings. 
+        Try  'All these are serial port settings. 
             SerialPort1.BaudRate = 115200
             SerialPort1.Parity = Parity.None
             SerialPort1.StopBits = StopBits.One
@@ -54,7 +55,7 @@ Public Class DataLoggingGraph
 
 
             If IsQuietBoard() Then 'Confirms that communication is with the Quiet Board
-                ' ConnectionStatusLabel.Text = $"Qy@ Connected on {SerialPort1.PortName}"
+                '     ConnectionStatusLabel.Text = $"Qy@ Connected on {SerialPort1.PortName}"
             Else
                 SetDefaults() 'Resets to defaults if not quiet board
             End If
@@ -119,7 +120,7 @@ Public Class DataLoggingGraph
     Private Sub SerialPort1_DataReceived(sender As Object, e As SerialDataReceivedEventArgs) Handles SerialPort1.DataReceived
         Try
             Dim bytesToRead As Integer = SerialPort1.BytesToRead
-            If bytesToRead < 4 Then Exit Sub ' not enough data yet
+            If bytesToRead < 4 Then Exit Sub                 ' not enough data yet
 
             Dim buffer(bytesToRead - 1) As Byte
             SerialPort1.Read(buffer, 0, bytesToRead)
@@ -129,21 +130,27 @@ Public Class DataLoggingGraph
                 hexString.Append(b.ToString("X2") & " ")
             Next
 
-            Dim leftValue As Integer = buffer(1) ' left analog (X-axis) takes the bytes we want
-            Dim rightValue As Integer = buffer(3) ' right analog (Y-axis)
+            ' Note: device sends multiple bytes; the ADC's 10-bit value is split across two bytes.
+            ' Combine the two bytes for the Y (right) channel into a single 10-bit sample.
+            Dim yLow As Integer = If(buffer.Length > 2, CInt(buffer(2)), 1)
+            Dim yHigh As Integer = If(buffer.Length > 3, CInt(buffer(3)), 0)
+            Dim ySample10 As Integer = ((yHigh << 8) Or yLow) And &H3FF 'mask to 10 bits
 
             ' Update the text boxes with the hex bytes (thread-safe)
             WriteToTextBox(Me.XAxisTextBox, buffer(0).ToString("X2"))
-            WriteToTextBox(Me.YAxisTextBox, buffer(2).ToString("X2"))
+
+            ' Show only the last 2 hex byte values from the received buffer in YAxisTextBox
+            Dim lastCount As Integer = Math.Min(2, buffer.Length)
+            Dim lastBytes = buffer.Skip(buffer.Length - lastCount).Take(lastCount).Select(Function(b) b.ToString("X2"))
+            Dim lastHex As String = String.Join(" ", lastBytes)
+            WriteToTextBox(Me.YAxisTextBox, lastHex)
 
             Me.Invoke(Sub()
                           SerialTextBox.AppendText(hexString.ToString() & vbCrLf)
                       End Sub)
 
-            ' If PIC control mode is active, draw using values currently present in the hex text boxes
-            ' If PICControlRadioButton.Checked Then
+            ' Update drawing using values currently present in the hex text boxes
             Me.Invoke(Sub() DrawFromHexTextBoxes()) 'This invoke function safely filters the hex from the text boxes
-            ' End If
 
         Catch ex As Exception
             Console.WriteLine($"Serial read error: {ex.Message}")
@@ -158,22 +165,21 @@ Public Class DataLoggingGraph
 
         ' Normalize case and remove common prefixes
         hx = hx.ToUpperInvariant().Replace("0X", "").Replace("&H", "")
-        hy = hy.ToUpperInvariant().Replace("0X", "").Replace("&H", "")
 
         hx = hx.Split(" "c, CChar(vbTab), CChar(vbCrLf)).FirstOrDefault()
-        hy = hy.Split(" "c, CChar(vbTab), CChar(vbCrLf)).FirstOrDefault()
-        If String.IsNullOrEmpty(hx) Or String.IsNullOrEmpty(hy) Then Return
+        If String.IsNullOrEmpty(hx) Then Return
 
         Try
-            Dim valX As Integer = Convert.ToInt32(hx, 16) '0..255 expected
-            Dim valY As Integer = Convert.ToInt32(hy, 16)
+            Dim valX As Integer = Convert.ToInt32(hx, 16) 'supports up to 3 hex digits if supplied
+            ' Use combined last two tokens from YAxisTextBox to compute 10-bit sample
+            Dim valY As Integer = GetHexValueFromTextBox(Me.YAxisTextBox, 0)
 
             ' --- DRAWING LIMITS CONFIG ---
             ' Change these four values to move the drawing area.
-            Dim leftRatio As Single = 0.1F '10% from left
-            Dim rightRatio As Single = 0.9F '10% from right
-            Dim topRatio As Single = 0.1F '10% from top
-            Dim bottomRatio As Single = 0.9F '10% from bottom
+            Dim leftRatio As Single = 0.1F   ' 10% from left
+            Dim rightRatio As Single = 0.9F  ' 10% from right
+            Dim topRatio As Single = 0.1F    ' 10% from top
+            Dim bottomRatio As Single = 0.9F ' 10% from bottom
 
             Dim w As Integer = Math.Max(1, GraphPictureBox.Width - 1)
             Dim h As Integer = Math.Max(1, GraphPictureBox.Height - 1)
@@ -187,9 +193,13 @@ Public Class DataLoggingGraph
             If maxX < minX Then Swap(minX, maxX)
             If maxY < minY Then Swap(minY, maxY)
 
-            ' Map raw0..255 into the constrained rectangle
-            Dim mappedX As Integer = minX + CInt(Math.Round((valX / 255.0F) * (maxX - minX)))
-            Dim mappedY As Integer = minY + CInt(Math.Round((valY / 255.0F) * (maxY - minY)))
+            ' Use per-axis normalization: if value exceeds 8-bit range, assume 10-bit (0..1023)
+            Dim denomX As Single = If(valX > 255, 1023.0F, 255.0F)
+            Dim denomY As Single = If(valY > 255, 1023.0F, 255.0F)
+
+            ' Map raw into the constrained rectangle
+            Dim mappedX As Integer = minX + CInt(Math.Round((valX / denomX) * (maxX - minX)))
+            Dim mappedY As Integer = minY + CInt(Math.Round((valY / denomY) * (maxY - minY)))
 
             ' Remember old position and update current position
             Dim oldX As Integer = CInt(currentX)
@@ -198,12 +208,6 @@ Public Class DataLoggingGraph
             currentX = Math.Max(0, Math.Min(w, mappedX))
             currentY = Math.Max(0, Math.Min(h, mappedY))
 
-            ' Draw on UI thread
-            ' If Me.InvokeRequired Then
-            ' Me.Invoke(Sub() DrawWithMouse(oldX, oldY, CInt(currentX), CInt(currentY)))
-            ' Else
-            ' DrawWithMouse(oldX, oldY, CInt(currentX), CInt(currentY))
-            'End If
         Catch ex As Exception
             Debug.WriteLine($"DrawFromHexTextBoxes parse error: {ex.Message}")
         End Try
@@ -227,10 +231,10 @@ Public Class DataLoggingGraph
         End If
     End Sub
     'Private Sub ReadAnalogButton_Click(sender As Object, e As EventArgs) Handles AnalogButton1.Click
-    ' Dim data(0) As Byte
-    ' data(0) = &H5F 'Hex value for reading analog quiet board values
-    ' connect()
-    ' SerialPort1.Write(data,0,1)
+    '    Dim data(0) As Byte
+    '    data(0) = &H5F 'Hex value for reading analog quiet board values
+    '    connect()
+    '    SerialPort1.Write(data, 0, 1)
     'End Sub
 
     'Program logic---------------------------------------------------------------------------
@@ -305,16 +309,25 @@ Public Class DataLoggingGraph
 
         ' Normalize and strip common prefixes
         s = s.ToUpperInvariant().Replace("0X", "").Replace("&H", "")
-        ' keep only the first token in case UI shows "AA BB"
-        s = s.Split({" "c, vbTab, vbCrLf}, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()
-        If String.IsNullOrEmpty(s) Then Return defaultValue
+        Dim tokens = s.Split({" "c, vbTab, vbCrLf}, StringSplitOptions.RemoveEmptyEntries)
+        If tokens.Length = 0 Then Return defaultValue
 
         Try
-            Dim v As Integer = Convert.ToInt32(s, 16)
-            ' clamp to expected0..255
-            If v < 0 Then v = 0
-            If v > 255 Then v = 255
-            Return v
+            If tokens.Length >= 2 Then
+                ' combine last two tokens as low, high -> 10-bit sample
+                Dim lowS = tokens(tokens.Length - 2)
+                Dim highS = tokens(tokens.Length - 1)
+                Dim low As Integer = Convert.ToInt32(lowS, 16)
+                Dim high As Integer = Convert.ToInt32(highS, 16)
+                Dim combined As Integer = ((high << 8) Or low) And &H3FF
+                Return combined
+            Else
+                ' single token -> parse as hex value
+                Dim v As Integer = Convert.ToInt32(tokens(0), 16)
+                If v < 0 Then v = 0
+                If v > 1023 Then v = 1023
+                Return v
+            End If
         Catch ex As Exception
             ' parsing failed -> return default
             Return defaultValue
@@ -322,7 +335,7 @@ Public Class DataLoggingGraph
     End Function
 
     Sub GetData()
-        ' Read the Y-axis hex value and use it as the sample (replaces GetRandomNumberAround)
+        ' Read the Y-axis hex value and use it as the sample (now supports up to 10-bit values from last two bytes)
         Dim sample As Integer = GetHexValueFromTextBox(Me.YAxisTextBox, 0)
 
         ' Maintain buffer length
@@ -335,22 +348,22 @@ Public Class DataLoggingGraph
     End Sub
 
     'Sub GetData()
-    ' Dim _last%
-    ' Dim sample%
+    '    Dim _last%
+    '    Dim sample%
 
-    ' If Me.DataBuffer.Count >0 Then
-    ' _last = Me.DataBuffer.Last
-    ' Else
+    '    If Me.DataBuffer.Count > 0 Then
+    '        _last = Me.DataBuffer.Last
+    '    Else
 
-    ' _last = GetRandomNumberAround(50,50)
-    ' End If
+    '        _last = GetRandomNumberAround(50, 50)
+    '    End If
 
-    ' If DataBuffer.Count >=100 Then 'Keep the queue trimmed to graph x length
-    ' DataBuffer.Dequeue()
-    ' End If
-    ' sample = GetRandomNumberAround(_last,5)
-    ' Me.DataBuffer.Enqueue(sample)
-    ' LogData(sample)
+    '    If DataBuffer.Count >= 100 Then 'Keep the queue trimmed to graph x length
+    '        DataBuffer.Dequeue()
+    '    End If
+    '    sample = GetRandomNumberAround(_last, 5)
+    '    Me.DataBuffer.Enqueue(sample)
+    '    LogData(sample)
     'End Sub
 
     Sub GraphData()
@@ -365,7 +378,8 @@ Public Class DataLoggingGraph
                 ' Translate and scale to match old behaviour
                 g.TranslateTransform(0, h)
                 Dim scaleX! = If(Me.DataBuffer.Count > 0, CSng(w) / Me.DataBuffer.Count, 1.0F)
-                Dim scaleY! = CSng((h / 100) * -1)
+                Dim adcMax As Integer = 1023 ' 10-bit ADC
+                Dim scaleY! = CSng((h / adcMax) * -1)
                 g.ScaleTransform(scaleX, scaleY)
 
                 Using pen As New Pen(Color.Lime), eraser As New Pen(Color.Black)
@@ -375,7 +389,7 @@ Public Class DataLoggingGraph
                     Dim x = -1
                     For Each y In Me.DataBuffer.Reverse
                         x += 1
-                        g.DrawLine(eraser, x, 0, x, 100)
+                        g.DrawLine(eraser, x, 0, x, adcMax)
                         g.DrawLine(pen, x - 1, oldY, x, y)
                         oldY = y
                     Next
@@ -442,7 +456,7 @@ Public Class DataLoggingGraph
 
     Private Sub DataLoggingGraph_Load(sender As Object, e As EventArgs) Handles Me.Load
         SetDefaults() 'Serial communication defaults
-        AnalogTimer.Enabled = True ' Disable hardware polling initially
+        AnalogTimer.Enabled = True  ' Disable hardware polling initially
 
         currentX = CSng(GraphPictureBox.Width / 2)
         currentY = CSng(GraphPictureBox.Height / 2)
@@ -450,6 +464,11 @@ Public Class DataLoggingGraph
 
     Private Sub YAxisTextBox_TextChanged(sender As Object, e As EventArgs) Handles YAxisTextBox.TextChanged
         Dim tb = DirectCast(sender, TextBox)
+
+        ' If textbox contains multiple tokens (space-separated hex bytes) do not try to reformat
+        If tb.Text.IndexOf(" "c) >= 0 Then
+            Return
+        End If
 
         ' Normalize and strip common prefixes
         Dim s As String = If(tb.Text, String.Empty).ToUpperInvariant()
@@ -468,17 +487,17 @@ Public Class DataLoggingGraph
             Return
         End If
 
-        ' Limit to two hex digits (0..FF)
-        If hex.Length > 2 Then hex = hex.Substring(0, 2)
+        ' Limit to three hex digits (0..3FF)
+        If hex.Length > 3 Then hex = hex.Substring(0, 3)
 
-        ' Parse and clamp to0..255, then format as two uppercase hex digits
+        ' Parse and clamp to 0..1023, then format as three uppercase hex digits
         Dim val As Integer
         If Integer.TryParse(hex, Globalization.NumberStyles.HexNumber, Globalization.CultureInfo.InvariantCulture, val) Then
             If val < 0 Then val = 0
-            If val > 255 Then val = 255
-            hex = val.ToString("X2")
+            If val > 1023 Then val = 1023
+            hex = val.ToString("X3")
         Else
-            hex = "00"
+            hex = "000"
         End If
 
         ' Only update textbox if different to avoid re-entrancy; preserve caret as best-effort
