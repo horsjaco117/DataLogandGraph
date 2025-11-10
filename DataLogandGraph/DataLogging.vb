@@ -1,4 +1,10 @@
-﻿Option Strict On
+﻿'Jacob Horsley
+'RCET 3371
+'Datalogging.
+'GitHub: https://github.com/horsjaco117/DataLogandGraph/tree/main
+
+
+Option Strict On
 Option Explicit On
 
 Imports System.Media
@@ -19,6 +25,7 @@ Public Class DataLoggingGraph
     Dim DataBuffer As New Queue(Of Integer)
 
     ' Thread-safe status updates
+    ' Update the COM status label on the UI thread
     Private Sub UpdateComStatus(text As String)
         If Me.IsHandleCreated AndAlso Me.ComStatusLabel IsNot Nothing Then
             If Me.ComStatusLabel.GetCurrentParent().InvokeRequired Then
@@ -29,6 +36,7 @@ Public Class DataLoggingGraph
         End If
     End Sub
 
+    ' Update the file path status label on the UI thread
     Private Sub UpdateFilePathStatus(path As String)
         If Me.IsHandleCreated AndAlso Me.FilePathStatusLabel IsNot Nothing Then
             Dim txt = If(String.IsNullOrEmpty(path), "Log: (none)", $"Log: {path}")
@@ -41,6 +49,7 @@ Public Class DataLoggingGraph
     End Sub
 
     'Serial Stuff----------------------------------------------------------------------------
+    ' Reset serial port and UI to default disconnected state
     Sub SetDefaults() 'Set's default serial pieces and shows COM ports
         Try
             If SerialPort1.IsOpen Then SerialPort1.Close() 'Closes the COM ports but adds settings
@@ -53,6 +62,7 @@ Public Class DataLoggingGraph
         GetPorts() 'Shows available ports
     End Sub
 
+    ' Populate the ports combobox with available serial ports
     Sub GetPorts()
 #Disable Warning BC42025 ' Access of shared member, constant member, enum member or nested type through an instance
         Dim ports() = SerialPort1.GetPortNames() 'Available ports
@@ -71,6 +81,7 @@ Public Class DataLoggingGraph
         End Try
     End Sub
 
+    ' Open the selected serial port and verify device
     Sub connect()
         Try
             If SerialPort1.IsOpen Then SerialPort1.Close() 'Closes the ports 
@@ -110,6 +121,7 @@ Public Class DataLoggingGraph
         Return True
 
     End Function
+    ' Send raw bytes to the serial port (non-blocking)
     Sub send(data() As Byte)
         SerialPort1.ReadExisting()
         SerialPort1.Write(data, 0, UBound(data))
@@ -121,20 +133,24 @@ Public Class DataLoggingGraph
         Return data
     End Function
 
+    ' Send handshake byte to the device
     Sub writeSerial() 'This write sub is especially for handshaking
         Dim data(0) As Byte
         data(0) = &B11110000
         SerialPort1.Write(data, 0, 1)
     End Sub
+    ' Handler to connect and initiate handshake when button clicked
     Private Sub COMButton_Click(sender As Object, e As EventArgs) Handles COMButton.Click
         'Establishes the com between the quiet board
 
         connect()
         writeSerial()
     End Sub
+    ' Timer tick handler that requests analog data
     Private Sub AnalogTimer_Tick(sender As Object, e As EventArgs) Handles AnalogTimer.Tick
         AnalogRead3() 'For every timer tick the Analog data is interpreted and read
     End Sub
+    ' Request analog data from the device and clear previous text
     Sub AnalogRead3() 'This analog test worked best
         ' Clear the previous data output for a clean read
         If SerialTextBox IsNot Nothing Then
@@ -152,6 +168,7 @@ Public Class DataLoggingGraph
         SerialPort1.Write(data, 0, 1)
     End Sub
 
+    ' Handle incoming serial data, parse bytes and update UI
     Private Sub SerialPort1_DataReceived(sender As Object, e As SerialDataReceivedEventArgs) Handles SerialPort1.DataReceived
         Try
             Dim bytesToRead As Integer = SerialPort1.BytesToRead
@@ -192,6 +209,7 @@ Public Class DataLoggingGraph
         End Try
     End Sub
 
+    ' Parse hex values from textboxes and compute drawing coordinates
     Private Sub DrawFromHexTextBoxes()
         ' Read & sanitize the hex strings
         Dim hx As String = If(XAxisTextBox?.Text, "").Trim()
@@ -248,11 +266,13 @@ Public Class DataLoggingGraph
         End Try
     End Sub
 
+    ' Swap two integer values (utility)
     Private Sub Swap(ByRef a As Integer, ByRef b As Integer)
         Dim t As Integer = a
         a = b
         b = t
     End Sub
+    ' Thread-safe textbox writer
     Public Sub WriteToTextBox(ByVal targetTextBox As System.Windows.Forms.TextBox, ByVal content As String)
         ' Check if the call is coming from a different thread than the one that created the control
         If targetTextBox.InvokeRequired Then
@@ -267,27 +287,20 @@ Public Class DataLoggingGraph
     End Sub
 
     'Program logic---------------------------------------------------------------------------
-    Function GetRandomNumberAround(thisNumber%, Optional within% = 10) As Integer
-        Dim result%
-        'result = thisNumber - within
-        result = (GetRandomNumber(within * 2) + (thisNumber - (within)))
-
-
-        Return result
-    End Function
-
-    Function GetRandomNumber(max%) As Integer
-        Randomize()
-
-        Return CInt(System.Math.Floor((Rnd() * max + 1)))
-    End Function
-
+    ' Asynchronously append sensor sample to log file
     Sub LogData(currentSample%)
         ' Offload file IO to a background task to avoid blocking the UI timer
         Try
             Dim fileName = $"SensorData_{DateTime.Now.ToString("yyMMddhh")}.log"
             Dim filePath$ = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fileName)
-            Dim line = String.Format("$${0},{1}{2}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), currentSample, Environment.NewLine)
+
+            ' Build formatted sample line
+            ' Example: "$$AN0 AA BB230501123045123" (yyMMddHHmmssfff)
+            Dim highByte As Integer = (currentSample >> 8) And &HFF
+            Dim lowByte As Integer = currentSample And &HFF
+            Dim timestamp As String = DateTime.Now.ToString("yyMMddHHmmssfff")
+            Dim line As String = $"$$AN0 {highByte:X2} {lowByte:X2} {timestamp}{Environment.NewLine}"
+
             Task.Run(Sub()
                          Try
                              File.AppendAllText(filePath, line)
@@ -302,6 +315,7 @@ Public Class DataLoggingGraph
 
     End Sub
 
+    ' Show open file dialog and load logged data into buffer
     Sub LoadData()
         Dim choice As DialogResult
         Dim fileNumber% = FreeFile()
@@ -364,6 +378,7 @@ Public Class DataLoggingGraph
         End Try
     End Function
 
+    ' Read the Y-axis hex value and use it as the sample (now supports up to 10-bit values from last two bytes)
     Sub GetData()
         ' Read the Y-axis hex value and use it as the sample (now supports up to 10-bit values from last two bytes)
         Dim sample As Integer = GetHexValueFromTextBox(Me.YAxisTextBox, 0)
@@ -378,6 +393,7 @@ Public Class DataLoggingGraph
     End Sub
 
 
+    ' Render the data buffer into PictureBox image
     Sub GraphData()
         ' Draw into an off-screen bitmap and assign to PictureBox.Image to avoid CreateGraphics resource issues
         Dim w As Integer = Math.Max(1, GraphPictureBox.Width)
@@ -436,10 +452,12 @@ Public Class DataLoggingGraph
 
 
     'Event Handlers--------------------------------------------------------------------------
+    ' Close the application window
     Private Sub ExitButton_Click(sender As Object, e As EventArgs) Handles ExitButton.Click
         Me.Close()
     End Sub
 
+    ' Toggle the sampling timer when graph button clicked
     Private Sub GraphButton_Click(sender As Object, e As EventArgs) Handles GraphButton.Click
         If SampleTimer.Enabled Then
             SampleTimer.Stop()
@@ -452,20 +470,24 @@ Public Class DataLoggingGraph
 
     End Sub
 
+    ' Timer tick to capture data and refresh graph
     Private Sub SampleTimer_Tick(sender As Object, e As EventArgs) Handles SampleTimer.Tick
         GetData()
         GraphData()
 
     End Sub
 
+    ' OpenFileDialog OK handler (unused placeholder)
     Private Sub OpenFileDialog1_FileOk(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles OpenFileDialog1.FileOk
         ' LoadData()
     End Sub
 
+    ' Menu item to load data from file
     Private Sub OpenToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles OpenToolStripMenuItem.Click
         LoadData()
     End Sub
 
+    ' Form load initialization: setup serial, timers, and UI controls
     Private Sub DataLoggingGraph_Load(sender As Object, e As EventArgs) Handles Me.Load
         SetDefaults() 'Serial communication defaults
         AnalogTimer.Enabled = True  ' Disable hardware polling initially
@@ -482,6 +504,7 @@ Public Class DataLoggingGraph
         AddHandler SampleRateComboBox.SelectedIndexChanged, AddressOf SampleRateComboBox_SelectedIndexChanged
     End Sub
 
+    ' Update sample timer interval based on combo selection
     Private Sub SampleRateComboBox_SelectedIndexChanged(sender As Object, e As EventArgs)
         Dim cb = TryCast(sender, ComboBox)
         If cb Is Nothing OrElse cb.SelectedItem Is Nothing Then Return
@@ -529,6 +552,7 @@ Public Class DataLoggingGraph
         End Select
     End Function
 
+    ' Normalize and clamp user input for Y axis as hex
     Private Sub YAxisTextBox_TextChanged(sender As Object, e As EventArgs) Handles YAxisTextBox.TextChanged
         Dim tb = DirectCast(sender, TextBox)
 
@@ -575,6 +599,7 @@ Public Class DataLoggingGraph
         End If
     End Sub
 
+    ' Menu item to start sampling
     Private Sub StartToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles StartToolStripMenuItem.Click
         If SampleTimer.Enabled Then
             SampleTimer.Stop()
@@ -586,6 +611,7 @@ Public Class DataLoggingGraph
         End If
     End Sub
 
+    ' Menu item to stop sampling
     Private Sub StopToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles StopToolStripMenuItem.Click
         If SampleTimer.Enabled Then
             SampleTimer.Stop()
@@ -597,6 +623,7 @@ Public Class DataLoggingGraph
         End If
     End Sub
 
+    ' Menu item to load/save data (calls LoadData)
     Private Sub SaveToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles SaveToolStripMenuItem.Click
         LoadData()
     End Sub
