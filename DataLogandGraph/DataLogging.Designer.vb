@@ -77,7 +77,6 @@ Partial Class DataLoggingGraph
         Me.ButtonGroupBox.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.ButtonGroupBox.Controls.Add(Me.ExitButton)
         Me.ButtonGroupBox.Controls.Add(Me.GraphButton)
-        Me.ButtonGroupBox.Controls.Add(Me.Button1)
         Me.ButtonGroupBox.Location = New System.Drawing.Point(1040, 721)
         Me.ButtonGroupBox.Name = "ButtonGroupBox"
         Me.ButtonGroupBox.Size = New System.Drawing.Size(731, 154)
@@ -86,6 +85,9 @@ Partial Class DataLoggingGraph
         '
         'ExitButton
         '
+        Me.ExitButton.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.ExitButton.Location = New System.Drawing.Point(492, 45)
         Me.ExitButton.Name = "ExitButton"
         Me.ExitButton.Size = New System.Drawing.Size(137, 63)
@@ -95,6 +97,9 @@ Partial Class DataLoggingGraph
         '
         'GraphButton
         '
+        Me.GraphButton.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.GraphButton.Location = New System.Drawing.Point(263, 36)
         Me.GraphButton.Name = "GraphButton"
         Me.GraphButton.Size = New System.Drawing.Size(166, 81)
@@ -104,7 +109,7 @@ Partial Class DataLoggingGraph
         '
         'Button1
         '
-        Me.Button1.Location = New System.Drawing.Point(6, 36)
+        Me.Button1.Location = New System.Drawing.Point(942, 283)
         Me.Button1.Name = "Button1"
         Me.Button1.Size = New System.Drawing.Size(168, 81)
         Me.Button1.TabIndex = 0
@@ -118,7 +123,7 @@ Partial Class DataLoggingGraph
         Me.MenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.OpenTopMenuItem})
         Me.MenuStrip1.Location = New System.Drawing.Point(0, 0)
         Me.MenuStrip1.Name = "MenuStrip1"
-        Me.MenuStrip1.Size = New System.Drawing.Size(2135, 36)
+        Me.MenuStrip1.Size = New System.Drawing.Size(2135, 33)
         Me.MenuStrip1.TabIndex = 2
         Me.MenuStrip1.Text = "MenuStrip1"
         '
@@ -169,6 +174,9 @@ Partial Class DataLoggingGraph
         '
         'PortsComboBox
         '
+        Me.PortsComboBox.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.PortsComboBox.FormattingEnabled = True
         Me.PortsComboBox.Location = New System.Drawing.Point(46, 801)
         Me.PortsComboBox.Name = "PortsComboBox"
@@ -177,6 +185,9 @@ Partial Class DataLoggingGraph
         '
         'PortsLabel
         '
+        Me.PortsLabel.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.PortsLabel.AutoSize = True
         Me.PortsLabel.Location = New System.Drawing.Point(42, 778)
         Me.PortsLabel.Name = "PortsLabel"
@@ -186,7 +197,7 @@ Partial Class DataLoggingGraph
         '
         'COMButton
         '
-        Me.COMButton.Location = New System.Drawing.Point(219, 778)
+        Me.COMButton.Location = New System.Drawing.Point(268, 538)
         Me.COMButton.Name = "COMButton"
         Me.COMButton.Size = New System.Drawing.Size(119, 51)
         Me.COMButton.TabIndex = 6
@@ -198,6 +209,9 @@ Partial Class DataLoggingGraph
         '
         'SerialTextBox
         '
+        Me.SerialTextBox.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.SerialTextBox.Location = New System.Drawing.Point(356, 801)
         Me.SerialTextBox.Name = "SerialTextBox"
         Me.SerialTextBox.Size = New System.Drawing.Size(266, 26)
@@ -205,6 +219,9 @@ Partial Class DataLoggingGraph
         '
         'YAxisTextBox
         '
+        Me.YAxisTextBox.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.YAxisTextBox.Location = New System.Drawing.Point(356, 879)
         Me.YAxisTextBox.Name = "YAxisTextBox"
         Me.YAxisTextBox.Size = New System.Drawing.Size(266, 26)
@@ -212,6 +229,9 @@ Partial Class DataLoggingGraph
         '
         'SerialLabel
         '
+        Me.SerialLabel.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.SerialLabel.AutoSize = True
         Me.SerialLabel.Location = New System.Drawing.Point(352, 766)
         Me.SerialLabel.Name = "SerialLabel"
@@ -221,6 +241,9 @@ Partial Class DataLoggingGraph
         '
         'YAxisLabel
         '
+        Me.YAxisLabel.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.YAxisLabel.AutoSize = True
         Me.YAxisLabel.Location = New System.Drawing.Point(352, 845)
         Me.YAxisLabel.Name = "YAxisLabel"
@@ -230,6 +253,9 @@ Partial Class DataLoggingGraph
         '
         'XAxisTextBox
         '
+        Me.XAxisTextBox.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.XAxisTextBox.Location = New System.Drawing.Point(356, 937)
         Me.XAxisTextBox.Name = "XAxisTextBox"
         Me.XAxisTextBox.Size = New System.Drawing.Size(266, 26)
@@ -237,6 +263,9 @@ Partial Class DataLoggingGraph
         '
         'XAxisLabel
         '
+        Me.XAxisLabel.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.XAxisLabel.AutoSize = True
         Me.XAxisLabel.Location = New System.Drawing.Point(352, 914)
         Me.XAxisLabel.Name = "XAxisLabel"
@@ -246,15 +275,21 @@ Partial Class DataLoggingGraph
         '
         'SampleRateLabel
         '
+        Me.SampleRateLabel.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.SampleRateLabel.AutoSize = True
         Me.SampleRateLabel.Location = New System.Drawing.Point(46, 730)
         Me.SampleRateLabel.Name = "SampleRateLabel"
-        Me.SampleRateLabel.Size = New System.Drawing.Size(98, 20)
+        Me.SampleRateLabel.Size = New System.Drawing.Size(102, 20)
         Me.SampleRateLabel.TabIndex = 13
         Me.SampleRateLabel.Text = "Sample Rate"
         '
         'SampleRateComboBox
         '
+        Me.SampleRateComboBox.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.SampleRateComboBox.FormattingEnabled = True
         Me.SampleRateComboBox.Location = New System.Drawing.Point(46, 752)
         Me.SampleRateComboBox.Name = "SampleRateComboBox"
@@ -276,7 +311,7 @@ Partial Class DataLoggingGraph
         'SaveToolStripMenuItem
         '
         Me.SaveToolStripMenuItem.Name = "SaveToolStripMenuItem"
-        Me.SaveToolStripMenuItem.Size = New System.Drawing.Size(240, 32)
+        Me.SaveToolStripMenuItem.Size = New System.Drawing.Size(121, 32)
         Me.SaveToolStripMenuItem.Text = "Save"
         '
         'ContextMenuStrip1
@@ -284,7 +319,7 @@ Partial Class DataLoggingGraph
         Me.ContextMenuStrip1.ImageScalingSize = New System.Drawing.Size(24, 24)
         Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.StartToolStripMenuItem, Me.StopToolStripMenuItem, Me.SaveToolStripMenuItem})
         Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
-        Me.ContextMenuStrip1.Size = New System.Drawing.Size(241, 133)
+        Me.ContextMenuStrip1.Size = New System.Drawing.Size(122, 100)
         '
         'DataLoggingGraph
         '
@@ -299,13 +334,14 @@ Partial Class DataLoggingGraph
         Me.Controls.Add(Me.SerialLabel)
         Me.Controls.Add(Me.YAxisTextBox)
         Me.Controls.Add(Me.SerialTextBox)
-        Me.Controls.Add(Me.COMButton)
         Me.Controls.Add(Me.PortsLabel)
         Me.Controls.Add(Me.PortsComboBox)
         Me.Controls.Add(Me.StatusStrip)
         Me.Controls.Add(Me.ButtonGroupBox)
         Me.Controls.Add(Me.GraphPictureBox)
         Me.Controls.Add(Me.MenuStrip1)
+        Me.Controls.Add(Me.COMButton)
+        Me.Controls.Add(Me.Button1)
         Me.MainMenuStrip = Me.MenuStrip1
         Me.Name = "DataLoggingGraph"
         Me.Text = "Graph the Data"
