@@ -18,7 +18,7 @@ Partial Class DataLoggingGraph
     Private components As System.ComponentModel.IContainer
 
     'NOTE: The following procedure is required by the Windows Form Designer
-    'It can be modified using the Windows Form Designer.  
+    'It can be modified using the Windows Form Designer. 
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
@@ -33,6 +33,7 @@ Partial Class DataLoggingGraph
         Me.OpenToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.StatusStrip = New System.Windows.Forms.StatusStrip()
         Me.FilePathStatusLabel = New System.Windows.Forms.ToolStripStatusLabel()
+        Me.ComStatusLabel = New System.Windows.Forms.ToolStripStatusLabel()
         Me.SampleTimer = New System.Windows.Forms.Timer(Me.components)
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
         Me.SerialPort1 = New System.IO.Ports.SerialPort(Me.components)
@@ -46,10 +47,15 @@ Partial Class DataLoggingGraph
         Me.YAxisLabel = New System.Windows.Forms.Label()
         Me.XAxisTextBox = New System.Windows.Forms.TextBox()
         Me.XAxisLabel = New System.Windows.Forms.Label()
+        Me.StartToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.StopToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.SaveToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ContextMenuStrip1 = New System.Windows.Forms.ContextMenuStrip(Me.components)
         CType(Me.GraphPictureBox, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.ButtonGroupBox.SuspendLayout()
         Me.MenuStrip1.SuspendLayout()
         Me.StatusStrip.SuspendLayout()
+        Me.ContextMenuStrip1.SuspendLayout()
         Me.SuspendLayout()
         '
         'GraphPictureBox
@@ -110,7 +116,7 @@ Partial Class DataLoggingGraph
         Me.MenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.OpenTopMenuItem})
         Me.MenuStrip1.Location = New System.Drawing.Point(0, 0)
         Me.MenuStrip1.Name = "MenuStrip1"
-        Me.MenuStrip1.Size = New System.Drawing.Size(2135, 36)
+        Me.MenuStrip1.Size = New System.Drawing.Size(2135, 33)
         Me.MenuStrip1.TabIndex = 2
         Me.MenuStrip1.Text = "MenuStrip1"
         '
@@ -130,7 +136,7 @@ Partial Class DataLoggingGraph
         'StatusStrip
         '
         Me.StatusStrip.ImageScalingSize = New System.Drawing.Size(24, 24)
-        Me.StatusStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.FilePathStatusLabel})
+        Me.StatusStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.FilePathStatusLabel, Me.ComStatusLabel})
         Me.StatusStrip.Location = New System.Drawing.Point(0, 992)
         Me.StatusStrip.Name = "StatusStrip"
         Me.StatusStrip.Size = New System.Drawing.Size(2135, 32)
@@ -140,8 +146,14 @@ Partial Class DataLoggingGraph
         'FilePathStatusLabel
         '
         Me.FilePathStatusLabel.Name = "FilePathStatusLabel"
-        Me.FilePathStatusLabel.Size = New System.Drawing.Size(180, 25)
-        Me.FilePathStatusLabel.Text = "ToolStripStatusLabel1"
+        Me.FilePathStatusLabel.Size = New System.Drawing.Size(101, 25)
+        Me.FilePathStatusLabel.Text = "Log: (none)"
+        '
+        'ComStatusLabel
+        '
+        Me.ComStatusLabel.Name = "ComStatusLabel"
+        Me.ComStatusLabel.Size = New System.Drawing.Size(169, 25)
+        Me.ComStatusLabel.Text = "COM: Disconnected"
         '
         'SampleTimer
         '
@@ -230,6 +242,31 @@ Partial Class DataLoggingGraph
         Me.XAxisLabel.TabIndex = 12
         Me.XAxisLabel.Text = "X Axis"
         '
+        'StartToolStripMenuItem
+        '
+        Me.StartToolStripMenuItem.Name = "StartToolStripMenuItem"
+        Me.StartToolStripMenuItem.Size = New System.Drawing.Size(121, 32)
+        Me.StartToolStripMenuItem.Text = "Start"
+        '
+        'StopToolStripMenuItem
+        '
+        Me.StopToolStripMenuItem.Name = "StopToolStripMenuItem"
+        Me.StopToolStripMenuItem.Size = New System.Drawing.Size(121, 32)
+        Me.StopToolStripMenuItem.Text = "Stop"
+        '
+        'SaveToolStripMenuItem
+        '
+        Me.SaveToolStripMenuItem.Name = "SaveToolStripMenuItem"
+        Me.SaveToolStripMenuItem.Size = New System.Drawing.Size(121, 32)
+        Me.SaveToolStripMenuItem.Text = "Save"
+        '
+        'ContextMenuStrip1
+        '
+        Me.ContextMenuStrip1.ImageScalingSize = New System.Drawing.Size(24, 24)
+        Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.StartToolStripMenuItem, Me.StopToolStripMenuItem, Me.SaveToolStripMenuItem})
+        Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
+        Me.ContextMenuStrip1.Size = New System.Drawing.Size(122, 100)
+        '
         'DataLoggingGraph
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(9.0!, 20.0!)
@@ -257,6 +294,7 @@ Partial Class DataLoggingGraph
         Me.MenuStrip1.PerformLayout()
         Me.StatusStrip.ResumeLayout(False)
         Me.StatusStrip.PerformLayout()
+        Me.ContextMenuStrip1.ResumeLayout(False)
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -271,6 +309,7 @@ Partial Class DataLoggingGraph
     Friend WithEvents OpenTopMenuItem As ToolStripMenuItem
     Friend WithEvents StatusStrip As StatusStrip
     Friend WithEvents FilePathStatusLabel As ToolStripStatusLabel
+    Friend WithEvents ComStatusLabel As ToolStripStatusLabel
     Friend WithEvents SampleTimer As Timer
     Friend WithEvents OpenFileDialog1 As OpenFileDialog
     Friend WithEvents OpenToolStripMenuItem As ToolStripMenuItem
@@ -285,4 +324,8 @@ Partial Class DataLoggingGraph
     Friend WithEvents YAxisLabel As Label
     Friend WithEvents XAxisTextBox As TextBox
     Friend WithEvents XAxisLabel As Label
+    Friend WithEvents StartToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents StopToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents SaveToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents ContextMenuStrip1 As ContextMenuStrip
 End Class

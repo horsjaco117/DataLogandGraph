@@ -17,10 +17,39 @@ Public Class DataLoggingGraph
     Private currentY As Single = 0
 
     Dim DataBuffer As New Queue(Of Integer)
+
+    ' Thread-safe status updates
+    Private Sub UpdateComStatus(text As String)
+        If Me.IsHandleCreated AndAlso Me.ComStatusLabel IsNot Nothing Then
+            If Me.ComStatusLabel.GetCurrentParent().InvokeRequired Then
+                Me.ComStatusLabel.GetCurrentParent().Invoke(New Action(Sub() Me.ComStatusLabel.Text = text))
+            Else
+                Me.ComStatusLabel.Text = text
+            End If
+        End If
+    End Sub
+
+    Private Sub UpdateFilePathStatus(path As String)
+        If Me.IsHandleCreated AndAlso Me.FilePathStatusLabel IsNot Nothing Then
+            Dim txt = If(String.IsNullOrEmpty(path), "Log: (none)", $"Log: {path}")
+            If Me.FilePathStatusLabel.GetCurrentParent().InvokeRequired Then
+                Me.FilePathStatusLabel.GetCurrentParent().Invoke(New Action(Sub() Me.FilePathStatusLabel.Text = txt))
+            Else
+                Me.FilePathStatusLabel.Text = txt
+            End If
+        End If
+    End Sub
+
     'Serial Stuff----------------------------------------------------------------------------
     Sub SetDefaults() 'Set's default serial pieces and shows COM ports
-        SerialPort1.Close() 'Closes the COM ports but adds settings
-        ' ConnectionStatusLabel.Text = "No connection" 'No connect until port chosen
+        Try
+            If SerialPort1.IsOpen Then SerialPort1.Close() 'Closes the COM ports but adds settings
+        Catch ex As Exception
+        End Try
+
+        ' Update COM status on status strip
+        UpdateComStatus("COM: Disconnected")
+
         GetPorts() 'Shows available ports
     End Sub
 
@@ -43,9 +72,12 @@ Public Class DataLoggingGraph
     End Sub
 
     Sub connect()
+        Try
+            If SerialPort1.IsOpen Then SerialPort1.Close() 'Closes the ports 
+        Catch ex As Exception
+        End Try
 
-        SerialPort1.Close() 'Closes the ports 
-        Try  'All these are serial port settings. 
+        Try 'All these are serial port settings. 
             SerialPort1.BaudRate = 115200
             SerialPort1.Parity = Parity.None
             SerialPort1.StopBits = StopBits.One
@@ -53,6 +85,8 @@ Public Class DataLoggingGraph
             SerialPort1.PortName = CStr(PortsComboBox.SelectedItem)
             SerialPort1.Open()
 
+            ' Update COM status
+            UpdateComStatus($"COM: Connected ({SerialPort1.PortName})")
 
             If IsQuietBoard() Then 'Confirms that communication is with the Quiet Board
                 '     ConnectionStatusLabel.Text = $"Qy@ Connected on {SerialPort1.PortName}"
@@ -62,6 +96,7 @@ Public Class DataLoggingGraph
         Catch ex As Exception
             MsgBox(ex.Message)
             SetDefaults()
+            UpdateComStatus($"COM: Error")
         End Try
 
     End Sub
@@ -230,12 +265,6 @@ Public Class DataLoggingGraph
             targetTextBox.Text = content
         End If
     End Sub
-    'Private Sub ReadAnalogButton_Click(sender As Object, e As EventArgs) Handles AnalogButton1.Click
-    '    Dim data(0) As Byte
-    '    data(0) = &H5F 'Hex value for reading analog quiet board values
-    '    connect()
-    '    SerialPort1.Write(data, 0, 1)
-    'End Sub
 
     'Program logic---------------------------------------------------------------------------
     Function GetRandomNumberAround(thisNumber%, Optional within% = 10) As Integer
@@ -257,11 +286,12 @@ Public Class DataLoggingGraph
         ' Offload file IO to a background task to avoid blocking the UI timer
         Try
             Dim fileName = $"SensorData_{DateTime.Now.ToString("yyMMddhh")}.log"
-            Dim filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fileName)
+            Dim filePath$ = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fileName)
             Dim line = String.Format("$${0},{1}{2}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), currentSample, Environment.NewLine)
             Task.Run(Sub()
                          Try
                              File.AppendAllText(filePath, line)
+                             UpdateFilePathStatus(filePath) ' Update the status label with the file path
                          Catch ioEx As Exception
                              Debug.WriteLine("LogData IO error: " & ioEx.Message)
                          End Try
@@ -347,24 +377,6 @@ Public Class DataLoggingGraph
         LogData(sample)
     End Sub
 
-    'Sub GetData()
-    '    Dim _last%
-    '    Dim sample%
-
-    '    If Me.DataBuffer.Count > 0 Then
-    '        _last = Me.DataBuffer.Last
-    '    Else
-
-    '        _last = GetRandomNumberAround(50, 50)
-    '    End If
-
-    '    If DataBuffer.Count >= 100 Then 'Keep the queue trimmed to graph x length
-    '        DataBuffer.Dequeue()
-    '    End If
-    '    sample = GetRandomNumberAround(_last, 5)
-    '    Me.DataBuffer.Enqueue(sample)
-    '    LogData(sample)
-    'End Sub
 
     Sub GraphData()
         ' Draw into an off-screen bitmap and assign to PictureBox.Image to avoid CreateGraphics resource issues
@@ -506,5 +518,31 @@ Public Class DataLoggingGraph
             tb.Text = hex
             tb.SelectionStart = Math.Min(sel, tb.Text.Length)
         End If
+    End Sub
+
+    Private Sub StartToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles StartToolStripMenuItem.Click
+        If SampleTimer.Enabled Then
+            SampleTimer.Stop()
+            SampleTimer.Enabled = False
+
+        Else
+            SampleTimer.Enabled = True
+            SampleTimer.Start()
+        End If
+    End Sub
+
+    Private Sub StopToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles StopToolStripMenuItem.Click
+        If SampleTimer.Enabled Then
+            SampleTimer.Stop()
+            SampleTimer.Enabled = False
+
+        Else
+            SampleTimer.Enabled = True
+            SampleTimer.Start()
+        End If
+    End Sub
+
+    Private Sub SaveToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles SaveToolStripMenuItem.Click
+        LoadData()
     End Sub
 End Class
