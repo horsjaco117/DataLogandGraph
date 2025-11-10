@@ -379,7 +379,7 @@ Public Class DataLoggingGraph
                 g.TranslateTransform(0, h)
                 Dim scaleX! = If(Me.DataBuffer.Count > 0, CSng(w) / Me.DataBuffer.Count, 1.0F)
                 Dim adcMax As Integer = 1023 ' 10-bit ADC
-                Dim scaleY! = CSng((h / adcMax) * -1)
+                Dim scaleY! = CSng((h / adcMax) * -4)
                 g.ScaleTransform(scaleX, scaleY)
 
                 Using pen As New Pen(Color.Lime), eraser As New Pen(Color.Black)
