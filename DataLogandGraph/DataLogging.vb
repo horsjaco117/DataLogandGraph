@@ -184,7 +184,7 @@ Public Class DataLoggingGraph
                           SerialTextBox.AppendText(hexString.ToString() & vbCrLf)
                       End Sub)
 
-            ' Update drawing using values currently present in the hex text boxes
+            ' Update drawing using values currently present in the hex textboxes
             Me.Invoke(Sub() DrawFromHexTextBoxes()) 'This invoke function safely filters the hex from the text boxes
 
         Catch ex As Exception
@@ -472,7 +472,62 @@ Public Class DataLoggingGraph
 
         currentX = CSng(GraphPictureBox.Width / 2)
         currentY = CSng(GraphPictureBox.Height / 2)
+
+        SampleRateComboBox.Items.Clear()
+        SampleRateComboBox.Items.AddRange(New Object() {
+          "Minutes:10", "Minutes:5", "Minutes:1",
+          "Seconds:30", "Seconds:10", "Seconds:5", "Seconds:1",
+          "Millis:500", "Millis:200", "Millis:100"})
+        SampleRateComboBox.SelectedIndex = 6
+        AddHandler SampleRateComboBox.SelectedIndexChanged, AddressOf SampleRateComboBox_SelectedIndexChanged
     End Sub
+
+    Private Sub SampleRateComboBox_SelectedIndexChanged(sender As Object, e As EventArgs)
+        Dim cb = TryCast(sender, ComboBox)
+        If cb Is Nothing OrElse cb.SelectedItem Is Nothing Then Return
+
+        Dim text = cb.SelectedItem.ToString()
+        Dim ms As Integer = ParseIntervalToMilliseconds(text)
+        If ms <= 0 Then Return
+
+        ' Apply interval (must be >=1)
+        Dim interval = Math.Max(1, ms)
+        Try
+            SampleTimer.Interval = interval
+            If SampleTimer.Enabled Then
+                ' restart to apply immediately
+                SampleTimer.Stop()
+                SampleTimer.Start()
+            End If
+        Catch ex As Exception
+            Debug.WriteLine($"Failed to set SampleTimer interval: {ex.Message}")
+        End Try
+    End Sub
+
+    Private Function ParseIntervalToMilliseconds(label As String) As Integer
+        If String.IsNullOrEmpty(label) Then Return 0
+        Dim parts = label.Split({":"c}, StringSplitOptions.RemoveEmptyEntries).Select(Function(s) s.Trim()).ToArray()
+        If parts.Length <> 2 Then Return 0
+        Dim unit = parts(0).ToLowerInvariant()
+        Dim value As Integer
+        If Not Integer.TryParse(parts(1), value) Then Return 0
+
+        Select Case unit
+            Case "minutes"
+                ' clamp to avoid overflow
+                If value <= 0 Then Return 0
+                Dim ms = value * 60 * 1000
+                Return If(ms < 1, 0, ms)
+            Case "seconds"
+                If value <= 0 Then Return 0
+                Return value * 1000
+            Case "millis"
+                If value <= 0 Then Return 0
+                Return value
+            Case Else
+                Return 0
+        End Select
+    End Function
 
     Private Sub YAxisTextBox_TextChanged(sender As Object, e As EventArgs) Handles YAxisTextBox.TextChanged
         Dim tb = DirectCast(sender, TextBox)

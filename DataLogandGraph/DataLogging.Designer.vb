@@ -47,6 +47,8 @@ Partial Class DataLoggingGraph
         Me.YAxisLabel = New System.Windows.Forms.Label()
         Me.XAxisTextBox = New System.Windows.Forms.TextBox()
         Me.XAxisLabel = New System.Windows.Forms.Label()
+        Me.SampleRateLabel = New System.Windows.Forms.Label()
+        Me.SampleRateComboBox = New System.Windows.Forms.ComboBox()
         Me.StartToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.StopToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.SaveToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
@@ -116,7 +118,7 @@ Partial Class DataLoggingGraph
         Me.MenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.OpenTopMenuItem})
         Me.MenuStrip1.Location = New System.Drawing.Point(0, 0)
         Me.MenuStrip1.Name = "MenuStrip1"
-        Me.MenuStrip1.Size = New System.Drawing.Size(2135, 33)
+        Me.MenuStrip1.Size = New System.Drawing.Size(2135, 36)
         Me.MenuStrip1.TabIndex = 2
         Me.MenuStrip1.Text = "MenuStrip1"
         '
@@ -124,7 +126,7 @@ Partial Class DataLoggingGraph
         '
         Me.OpenTopMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.OpenToolStripMenuItem})
         Me.OpenTopMenuItem.Name = "OpenTopMenuItem"
-        Me.OpenTopMenuItem.Size = New System.Drawing.Size(54, 29)
+        Me.OpenTopMenuItem.Size = New System.Drawing.Size(54, 32)
         Me.OpenTopMenuItem.Text = "&File"
         '
         'OpenToolStripMenuItem
@@ -242,6 +244,23 @@ Partial Class DataLoggingGraph
         Me.XAxisLabel.TabIndex = 12
         Me.XAxisLabel.Text = "X Axis"
         '
+        'SampleRateLabel
+        '
+        Me.SampleRateLabel.AutoSize = True
+        Me.SampleRateLabel.Location = New System.Drawing.Point(46, 730)
+        Me.SampleRateLabel.Name = "SampleRateLabel"
+        Me.SampleRateLabel.Size = New System.Drawing.Size(98, 20)
+        Me.SampleRateLabel.TabIndex = 13
+        Me.SampleRateLabel.Text = "Sample Rate"
+        '
+        'SampleRateComboBox
+        '
+        Me.SampleRateComboBox.FormattingEnabled = True
+        Me.SampleRateComboBox.Location = New System.Drawing.Point(46, 752)
+        Me.SampleRateComboBox.Name = "SampleRateComboBox"
+        Me.SampleRateComboBox.Size = New System.Drawing.Size(170, 28)
+        Me.SampleRateComboBox.TabIndex = 14
+        '
         'StartToolStripMenuItem
         '
         Me.StartToolStripMenuItem.Name = "StartToolStripMenuItem"
@@ -257,7 +276,7 @@ Partial Class DataLoggingGraph
         'SaveToolStripMenuItem
         '
         Me.SaveToolStripMenuItem.Name = "SaveToolStripMenuItem"
-        Me.SaveToolStripMenuItem.Size = New System.Drawing.Size(121, 32)
+        Me.SaveToolStripMenuItem.Size = New System.Drawing.Size(240, 32)
         Me.SaveToolStripMenuItem.Text = "Save"
         '
         'ContextMenuStrip1
@@ -265,13 +284,15 @@ Partial Class DataLoggingGraph
         Me.ContextMenuStrip1.ImageScalingSize = New System.Drawing.Size(24, 24)
         Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.StartToolStripMenuItem, Me.StopToolStripMenuItem, Me.SaveToolStripMenuItem})
         Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
-        Me.ContextMenuStrip1.Size = New System.Drawing.Size(122, 100)
+        Me.ContextMenuStrip1.Size = New System.Drawing.Size(241, 133)
         '
         'DataLoggingGraph
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(9.0!, 20.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(2135, 1024)
+        Me.Controls.Add(Me.SampleRateComboBox)
+        Me.Controls.Add(Me.SampleRateLabel)
         Me.Controls.Add(Me.XAxisLabel)
         Me.Controls.Add(Me.XAxisTextBox)
         Me.Controls.Add(Me.YAxisLabel)
@@ -324,6 +345,8 @@ Partial Class DataLoggingGraph
     Friend WithEvents YAxisLabel As Label
     Friend WithEvents XAxisTextBox As TextBox
     Friend WithEvents XAxisLabel As Label
+    Friend WithEvents SampleRateLabel As Label
+    Friend WithEvents SampleRateComboBox As ComboBox
     Friend WithEvents StartToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents StopToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents SaveToolStripMenuItem As ToolStripMenuItem
